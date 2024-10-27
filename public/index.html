@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contactos</title>
+    <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body>
+
+    <div id="app">
+        <h2>{{titulo}}</h2>
+        <div class="p-6">
+            <h1 class="text-2xl font-bold mb-4">Lista de Contactos</h1>
+            <table class="min-w-full bg-white border border-gray-300">
+                <thead>
+                    <tr class="bg-gray-200 text-gray-700">
+                        <th class="py-2 px-4 border-b">ID</th>
+                        <th class="py-2 px-4 border-b">Nombre</th>
+                        <th class="py-2 px-4 border-b">Número</th>
+                        <th class="py-2 px-4 border-b">Saldo</th>
+                        <th class="py-2 px-4 border-b">Fecha de Creación</th>
+                        <th class="py-2 px-4 border-b">Fecha de Actualización</th>
+                        <th>ACCION</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="contacto in contactos" :key="contacto.id" class="hover:bg-gray-100">
+                        <td class="py-2 px-4 border-b">{{ contacto.id }}</td>
+                        <td class="py-2 px-4 border-b">{{ contacto.nombre }}</td>
+                        <td class="py-2 px-4 border-b">{{ contacto.numero }}</td>
+                        <td class="py-2 px-4 border-b">{{ contacto.saldo }}</td>
+                        <td class="py-2 px-4 border-b">{{ new Date(contacto.createdAt).toLocaleString() }}</td>
+                        <td class="py-2 px-4 border-b">{{ new Date(contacto.updatedAt).toLocaleString() }}</td>
+                        <td>
+                            <input type="number" v-model="nuevoSaldo" placeholder="Nuevo saldo"
+                                class="border border-gray-300 p-1" />
+                            <button @click="actualizarSaldo(contacto.id)" class="bg-blue-500 text-white px-2 py-1 ml-2">
+                                Actualizar
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+    <script>
+        const { createApp, ref } = Vue
+
+        createApp({
+            setup() {
+                const titulo = ref('Lista de Contactos!')
+                const contactos = ref([]);
+                const nuevoSaldo = ref(0)
+
+                function getContactos() {
+                    fetch('http://127.0.0.1:3000/api/contactos')
+                        .then(response => response.json())
+                        .then(json => {
+                            contactos.value = json
+                        })
+                }
+
+                getContactos()
+
+                function actualizarSaldo(id) {
+                    const saldoPendiente = nuevoSaldo[id];
+
+                    if (saldoPendiente !== undefined) {
+                        fetch(`http://127.0.0.1:3000/api/contactos/${id}/saldo`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify({ saldoPendiente })
+                        })
+                            .then(response => {
+                                if (!response.ok) {
+                                    throw new Error('Error al actualizar el saldo');
+                                }
+                                return response.json();
+                            })
+                            .then(updatedContacto => {
+                                // Actualiza el contacto en el array
+                                const index = this.contactos.findIndex(contacto => contacto.id === id);
+                                if (index !== -1) {
+                                    this.contactos[index] = updatedContacto;
+                                }
+                                // Limpia el campo de nuevo saldo
+                                this.nuevoSaldo[id] = '';
+                            })
+                            .catch(error => console.error('Error al actualizar el saldo:', error));
+                    } else {
+                        alert('Por favor, ingresa un saldo válido.');
+                    }
+                }
+
+                return {
+                    titulo,
+                    contactos
+                }
+            }
+        }).mount('#app')
+    </script>
+
+</body>
+
+</html>
