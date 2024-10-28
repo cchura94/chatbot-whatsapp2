@@ -61,7 +61,7 @@
                 const nuevoSaldo = ref(0)
 
                 function getContactos() {
-                    fetch('http://44.206.245.149:3000/api/contactos')
+                    fetch('http://127.0.0.1:3000/api/contactos')
                         .then(response => response.json())
                         .then(json => {
                             contactos.value = json
@@ -74,7 +74,7 @@
                     const saldoPendiente = nuevoSaldo[id];
 
                     if (saldoPendiente !== undefined) {
-                        fetch(`http://44.206.245.149:3000/api/contactos/${id}/saldo`, {
+                        fetch(`http://127.0.0.1:3000/api/contactos/${id}/saldo`, {
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
